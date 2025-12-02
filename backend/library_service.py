@@ -112,6 +112,7 @@ def search_books(query: str) -> List[Dict[str, Any]]:
                OR b.Isbn = %s
             GROUP BY b.Isbn, b.Title
             ORDER BY b.Title ASC
+            LIMIT 50
             """,
             (like, like, query),
         )
