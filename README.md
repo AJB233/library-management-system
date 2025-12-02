@@ -1,192 +1,188 @@
-# Library Management System – Milestone 2
-Backend host application and SQL schema for our CS 4347 Database Systems group project.
-Backend Host Application + ETL Pipeline + MySQL Database
+# Library Management System — Milestone 2  
+**CS 4347 — Database Systems**
 
-This project implements a Library Management System for use by librarians.
+This project is a **Database Host Application** for librarians, backed by a MySQL relational database.  
+Milestone 2 extends Milestone 1 by building a working backend service layer, CLI interface, and ETL pipeline, all integrated with a normalized MySQL database.
 
-A Python ETL pipeline (normalize → load)
-A MySQL relational schema
-A database host application (in progress)
-Support for a clean .env-based configuration
-A reset workflow for testing & development
+Librarians can:
+- Search for books (by title, author, or ISBN)
+- Check out books
+- Check in books (with automatic fine computation)
+- View borrower info
+- View borrower loans (active + historical)
+- View and pay fines
 
-Project Structure
+---
+
+# Project Features
+
+### Fully normalized MySQL schema (3NF)  
+Created in **Milestone 1**, implemented in `schema/schema.sql`.
+
+### ETL pipeline  
+`etl/normalize_data.py` → normalizes raw CSVs  
+`etl/load_data.py` → loads normalized CSVs into MySQL
+
+### Backend service layer  
+Implements core library operations in:
+
+backend/library_service.py
+
+### Manual CLI  
+Interactive librarian interface:
+
+python -m backend.manual_cli
+
+### ✔ Smoke tests  
+Lightweight test harness verifying the backend:
+
+python -m tests.test_library_service_smoke
+
+---
+
+# 📂 Project Structure
+
 library-management-system/
-├── backend/                 # Future host application (Milestone 2+)
+│
+├── backend/
+│ ├── init.py
+│ ├── db.py # MySQL connections (uses config + .env)
+│ ├── models.py # Dataclasses mirroring DB tables
+│ ├── utils.py # Row → model converters + helpers
+│ ├── library_service.py # Core operations (search, checkout, fines, etc.)
+│ └── manual_cli.py # Interactive CLI for librarians
+│
 ├── etl/
-│   ├── normalize_data.py    # Normalizes raw CSVs → 3NF-compatible output
-│   ├── load_data.py         # Loads normalized CSVs into MySQL
-│   ├── output/              # Generated normalized CSVs
-│   └── raw/                 # Provided raw datasets (books + borrowers)
+│ ├── normalize_data.py # Normalizes raw CSVs into 3NF-compatible files
+│ ├── load_data.py # Loads normalized files into MySQL DB
+│ └── output/ # Generated normalized CSVs
+│
 ├── schema/
-│   ├── schema.sql           # Creates database + tables
-│   ├── sample_data.sql      # Optional starter data for DB testing
-│   └── reset.sql            # Drops + recreates DB + auto-loads schema/data
+│ ├── schema.sql # MySQL DDL (tables, constraints)
+│ ├── sample_data.sql # Insert statements for sample data
+│ └── reset.sql # Drops + recreates + reloads schema + data
+│
 ├── tests/
-│   └── check_counts.py      sanity-check utilities
-├── config.py                # Loads DB credentials from .env
-├── .env.example             # Template for local .env configurations
-├── requirements.txt         # Python dependencies for ETL/backend
+│ └── test_library_service_smoke.py
+│
+├── raw/ # Raw CSV files (books.csv, borrowers.csv)
+│
+├── .env.example # Template for DB credentials
+├── requirements.txt # Python dependencies
 └── README.md
 
-Getting Started (Development Setup)
-1. Clone the Repository
-git clone https://github.com/ajb233/library-management-system.git
+
+---
+
+# Environment Setup
+
+## 1. Clone the repo
+
+```bash
+git clone https://github.com/AJB233/library-management-system.git
 cd library-management-system
 
-2. Create and Activate a Python Virtual Environment (WSL)
+2. Create + activate virtual environment
+bash
 python3 -m venv venv
 source venv/bin/activate
 
-Your prompt should look like:
-(venv) user@machine:~/library-management-system$
-
-3. Install Dependencies
+3. Install dependencies
+bash
 pip install -r requirements.txt
 
-4. Create Your Local .env File
+4. Create .env file
 Copy the example:
+
+bash
 cp .env.example .env
 
-Open it:
-nano .env
+Edit your DB credentials:
 
-Fill in your DB credentials:
 DB_HOST=localhost
 DB_PORT=3306
-DB_USER=library_user
-DB_PASSWORD=libpass123
+DB_USER=root
+DB_PASSWORD=yourpassword
 DB_NAME=library
 
-MySQL Setup and Database Reset
-1. Start MySQL (if not already running)
-
-sudo service mysql start
-
-2. Load or Reset the Database
-
-The reset script:
-Drops the database (if it exists)
-Recreates it
-Loads schema.sql
-Loads sample_data.sql
-
-Run inside MySQL:
-
+Database Setup (MySQL)
+1. Start MySQL and enter the shell
+bash
 sudo mysql
 
-Then:
+2. Run the reset script (recommended)
+From the MySQL shell:
+sql
+SOURCE schema/reset.sql;
 
-SOURCE /home/<your-username>/library-management-system/schema/reset.sql;
-EXIT;
+This will:
 
-(Replace <your-username> as needed.)
+Drop the existing library DB (if any)
 
-ETL Pipeline (Normalize → Load)
-1. Normalize Raw CSVs
-Produces cleaned, 3NF-compatible CSVs under etl/output/.
+Recreate it
 
-Run:
+Load schema
 
+Load sample data
+
+(Optional) Rebuild DB using ETL pipeline
+Normalize the raw CSVs:
+bash
 python etl/normalize_data.py \
-    --books "etl/raw/books(1).csv" \
-    --borrowers "etl/raw/borrowers(1).csv" \
-    --outdir etl/output
+  --books "raw/books(1).csv" \
+  --borrowers "raw/borrowers(1).csv" \
+  --outdir etl/output
 
-
-Successful output example:
-Wrote 25001 books, 15602 authors, 30340 links, 1000 borrowers
-
-2. Load Normalized Data into MySQL
+Load normalized data:
+bash
 python etl/load_data.py
 
-If .env is correct and DB user has privileges, you’ll see successful insert logs.
+This uses credentials in .env.
 
-3. Verify Data in MySQL
-sudo mysql
-USE library;
+💻 Running the Manual CLI
+From project root:
 
-SELECT COUNT(*) FROM BOOK;
-SELECT COUNT(*) FROM AUTHORS;
-SELECT COUNT(*) FROM BOOK_AUTHORS;
-SELECT COUNT(*) FROM BORROWER;
+bash
+source venv/bin/activate
+python -m backend.manual_cli
 
-Testing Utilities
-Row count sanity check:
-python tests/check_counts.py
+You will see an interactive menu with options for:
 
-Milestone 2: Backend Development (Host Application)
+Search books
 
-Backend will eventually support:
+Check out books
 
-Searching books
+Check in books
 
-Viewing borrowers
+Borrower lookup
 
-Checking out items
+View loans
 
-Returning items
+View/pay fines
 
-Viewing loan history
+Perfect for demos & grading.
 
-Managing book/author records
+Running Smoke Tests
+From project root:
 
-Architecture will follow a clean separation:
+bash
+source venv/bin/activate
+python -m tests.test_library_service_smoke
 
-backend/
-├── db/
-│   └── connection.py
-├── services/
-│   ├── books.py
-│   ├── borrowers.py
-│   ├── loans.py
-│   └── authors.py
-├── cli/
-└── utils/
+This verifies:
 
-Team Workflow
-For each team member:
+DB connectivity
 
-Pull latest changes:
+Search functionality
 
-git pull
+Borrower lookup
 
+Loan/fine logic (manual tests optional)
 
-Create .env from .env.example
+You may set these inside the file to run live checkout/checkin tests:
 
-Create & activate venv
-
-Run:
-
-pip install -r requirements.txt
-
-
-Reset and load DB
-
-Run ETL if needed:
-
-python etl/normalize_data.py ...
-python etl/load_data.py
-
-This README documents:
-
-
-
-Environment setup
-## Tech Stack
-- **Database:** MySQL  
-- **Backend Language:** Python  
-- **ETL:** Python + pandas  
-
-## Project Structure
-- `schema/` — MySQL schema + sample inserts  
-- `etl/` — normalization + loading into DB  
-- `backend/` — Python logic (search, checkout, borrowers, fines)  
-- `tests/` — manual CLI + automated tests  
-- `docs/` — milestone writeups and planning  
-
-## How to Run
-See `schema/schema.sql` for database creation.
-Use `etl/load_data.py` to populate normalized data.
-Use `tests/manual_cli.py` to run backend functions interactively.
-
+python
+Copy code
+KNOWN_TEST_ISBN = "..."
+KNOWN_TEST_CARD_ID = "..."
+KNOWN_TEST_LOAN_ID = ...
