@@ -3,7 +3,6 @@ Backend host application and SQL schema for our CS 4347 Database Systems group p
 Backend Host Application + ETL Pipeline + MySQL Database
 
 This project implements a Library Management System for use by librarians.
-Milestone 2 introduces:
 
 A Python ETL pipeline (normalize → load)
 A MySQL relational schema
@@ -17,14 +16,14 @@ library-management-system/
 ├── etl/
 │   ├── normalize_data.py    # Normalizes raw CSVs → 3NF-compatible output
 │   ├── load_data.py         # Loads normalized CSVs into MySQL
-│   ├── output/              # Generated normalized CSVs (ignored from Git)
+│   ├── output/              # Generated normalized CSVs
 │   └── raw/                 # Provided raw datasets (books + borrowers)
 ├── schema/
 │   ├── schema.sql           # Creates database + tables
 │   ├── sample_data.sql      # Optional starter data for DB testing
 │   └── reset.sql            # Drops + recreates DB + auto-loads schema/data
 ├── tests/
-│   └── check_counts.py      # (Optional) sanity-check utilities
+│   └── check_counts.py      sanity-check utilities
 ├── config.py                # Loads DB credentials from .env
 ├── .env.example             # Template for local .env configurations
 ├── requirements.txt         # Python dependencies for ETL/backend
@@ -58,8 +57,6 @@ DB_PORT=3306
 DB_USER=library_user
 DB_PASSWORD=libpass123
 DB_NAME=library
-
-DON'T commit your .env file — it is already in .gitignore.
 
 MySQL Setup and Database Reset
 1. Start MySQL (if not already running)
