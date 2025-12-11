@@ -45,29 +45,34 @@ python -m tests.test_library_service_smoke
 library-management-system/
 │
 ├── backend/
-│ ├── init.py
-│ ├── db.py # MySQL connections (uses config + .env)
-│ ├── models.py # Dataclasses mirroring DB tables
-│ ├── utils.py # Row → model converters + helpers
-│ ├── library_service.py # Core operations (search, checkout, fines, etc.)
-│ └── manual_cli.py # Interactive CLI for librarians
+│ ├── db.py # MySQL connection using .env
+│ ├── models.py # Data model classes
+│ ├── utils.py # Converters and helpers
+│ ├── library_service.py # Core library operations
+│ └── manual_cli.py # Text-based interactive CLI
+│
+├── gui/
+│ ├── app.py # Flask GUI entry point
+│ └── templates/ # HTML pages for search, borrower, etc.
 │
 ├── etl/
-│ ├── normalize_data.py # Normalizes raw CSVs into 3NF-compatible files
-│ ├── load_data.py # Loads normalized files into MySQL DB
-│ └── output/ # Generated normalized CSVs
+│ ├── normalize_data.py # Normalizes raw CSVs into 3NF-compatible output
+│ ├── load_data.py # Loads normalized data into MySQL
+│ └── output/ # Generated 3NF CSVs
 │
 ├── schema/
-│ ├── schema.sql # MySQL DDL (tables, constraints)
-│ ├── sample_data.sql # Insert statements for sample data
-│ └── reset.sql # Drops + recreates + reloads schema + data
+│ ├── schema.sql # MySQL schema
+│ ├── sample_data.sql # Insert sample data
+│ └── reset.sql # Drops + recreates + loads schema + data
 │
 ├── tests/
-│ └── test_library_service_smoke.py
+│ └── test_library_service_smoke.py # Light verification tests
 │
-├── raw/ # Raw CSV files (books.csv, borrowers.csv)
+├── raw/ # Provided raw input CSVs
+├── data/ # Optional additional data directories
 │
-├── .env.example # Template for DB credentials
+├── config.py # Loads env variables
+├── .env.example # Template environment config
 ├── requirements.txt # Python dependencies
 └── README.md
 
@@ -186,3 +191,31 @@ Copy code
 KNOWN_TEST_ISBN = "..."
 KNOWN_TEST_CARD_ID = "..."
 KNOWN_TEST_LOAN_ID = ...
+
+Running the GUI (Milestone 3) — Flask Web App
+
+From the project root:
+
+source venv/bin/activate
+python -m gui.app
+
+
+Open in your browser:
+
+http://localhost:5000
+
+GUI Features
+
+Search Books
+Search by title, ISBN, or author
+See availability
+Checkout from the results table
+
+Borrower Dashboard
+Enter a card_id to view:
+Borrower info
+Current loans
+Full loan history
+All fines (paid + unpaid)
+Buttons to check in books
+Buttons to pay fines
