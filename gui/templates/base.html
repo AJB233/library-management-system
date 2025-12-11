@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Library Management System</title>
+  <style>
+    body { font-family: sans-serif; margin: 1.5rem; }
+    header { margin-bottom: 1rem; }
+    nav a { margin-right: 1rem; }
+    .flash-success { color: green; }
+    .flash-error { color: red; }
+    table { border-collapse: collapse; width: 100%; margin-top: 0.5rem; }
+    th, td { border: 1px solid #ccc; padding: 0.3rem 0.5rem; }
+    th { background: #f0f0f0; }
+    form.inline { display: inline; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Library Management System</h1>
+    <nav>
+      <a href="{{ url_for('search') }}">Search Books</a>
+      <a href="{{ url_for('borrower') }}">Borrower Dashboard</a>
+    </nav>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+          {% for category, message in messages %}
+            <li class="flash-{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <hr>
+  </header>
+
+  {% block content %}{% endblock %}
+</body>
+</html>

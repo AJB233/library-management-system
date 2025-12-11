@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Search Books</h2>
+
+  <form method="get" action="{{ url_for('search') }}">
+    <label>
+      Search:
+      <input type="text" name="q" value="{{ query }}">
+    </label>
+    <button type="submit">Search</button>
+  </form>
+
+  {% if query %}
+    <p>Showing results for "<strong>{{ query }}</strong>":</p>
+  {% endif %}
+
+  {% if results %}
+    <table>
+      <tr>
+        <th>ISBN</th>
+        <th>Title</th>
+        <th>Authors</th>
+        <th>Status</th>
+        <th>Check Out</th>
+      </tr>
+      {% for item in results %}
+        <tr>
+          <td>{{ item.book.isbn if item.book is defined else item["book"]["isbn"] }}</td>
+          <td>{{ item.book.title if item.book is defined else item["book"]["title"] }}</td>
+          <td>{{ ", ".join(item.authors) if item.authors is defined else ", ".join(item["authors"]) }}</td>
+          <td>{{ "Available" if item.available or item["available"] else "Checked out" }}</td>
+          <td>
+            {% if item.available or item["available"] %}
+              <form method="post" action="{{ url_for('checkout') }}" class="inline">
+                <input type="hidden" name="isbn" value="{{ item.book.isbn if item.book is defined else item['book']['isbn'] }}">
+                <input type="text" name="card_id" placeholder="Card ID">
+                <button type="submit">Check Out</button>
+              </form>
+            {% else %}
+              <em>Not available</em>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% elif query %}
+    <p>No results found.</p>
+  {% endif %}
+{% endblock %}

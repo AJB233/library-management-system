@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Borrower Dashboard</h2>
+
+  <form method="post" action="{{ url_for('borrower') }}">
+    <label>
+      Card ID:
+      <input type="text" name="card_id" value="{{ card_id }}">
+    </label>
+    <button type="submit">Load</button>
+  </form>
+
+  {% if card_id %}
+    <h3>Borrower Info</h3>
+    {% if borrower %}
+      <ul>
+        <li>Card ID: {{ borrower.card_id if borrower.card_id is defined else borrower["card_id"] }}</li>
+        <li>Name: {{ borrower.bname if borrower.bname is defined else borrower["bname"] }}</li>
+        <li>Address: {{ borrower.address if borrower.address is defined else borrower["address"] }}</li>
+        <li>Phone: {{ borrower.phone if borrower.phone is defined else borrower["phone"] }}</li>
+        <li>SSN: {{ borrower.ssn if borrower.ssn is defined else borrower["ssn"] }}</li>
+      </ul>
+    {% else %}
+      <p>No borrower found with Card ID "{{ card_id }}".</p>
+    {% endif %}
+
+    <h3>Loans</h3>
+    {% if loans %}
+      <table>
+        <tr>
+          <th>Loan ID</th>
+          <th>ISBN</th>
+          <th>Title</th>
+          <th>Date Out</th>
+          <th>Due Date</th>
+          <th>Date In</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+        {% for entry in loans %}
+          {% set loan = entry.loan if entry.loan is defined else entry["loan"] %}
+          <tr>
+            <td>{{ loan.loan_id if loan.loan_id is defined else loan["loan_id"] }}</td>
+            <td>{{ loan.isbn if loan.isbn is defined else loan["isbn"] }}</td>
+            <td>{{ entry.book_title }}</td>
+            <td>{{ loan.date_out if loan.date_out is defined else loan["date_out"] }}</td>
+            <td>{{ loan.due_date if loan.due_date is defined else loan["due_date"] }}</td>
+            <td>{{ loan.date_in if loan.date_in is defined else loan["date_in"] }}</td>
+            <td>{{ "Active" if entry.is_active or entry["is_active"] else "Closed" }}</td>
+            <td>
+              {% if entry.is_active or entry["is_active"] %}
+                <form method="post" action="{{ url_for('checkin') }}" class="inline">
+                  <input type="hidden" name="loan_id" value="{{ loan.loan_id if loan.loan_id is defined else loan['loan_id'] }}">
+                  <input type="hidden" name="card_id" value="{{ card_id }}">
+                  <button type="submit">Check In</button>
+                </form>
+              {% else %}
+                <em>Returned</em>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p>No loans found.</p>
+    {% endif %}
+
+    <h3>Fines</h3>
+    {% if fines %}
+      <table>
+        <tr>
+          <th>Loan ID</th>
+          <th>Title</th>
+          <th>Amount</th>
+          <th>Paid?</th>
+          <th>Actions</th>
+        </tr>
+        {% for entry in fines %}
+          {% set fine = entry.fine if entry.fine is defined else entry["fine"] %}
+          <tr>
+            <td>{{ fine.loan_id if fine.loan_id is defined else fine["loan_id"] }}</td>
+            <td>{{ entry.book_title }}</td>
+            <td>${{ "%.2f"|format(fine.fine_amt if fine.fine_amt is defined else fine["fine_amt"]) }}</td>
+            <td>{{ "Yes" if fine.paid or fine["paid"] else "No" }}</td>
+            <td>
+              {% if not (fine.paid or fine["paid"]) %}
+                <form method="post" action="{{ url_for('pay_fine') }}" class="inline">
+                  <input type="hidden" name="loan_id" value="{{ fine.loan_id if fine.loan_id is defined else fine['loan_id'] }}">
+                  <input type="hidden" name="card_id" value="{{ card_id }}">
+                  <button type="submit">Mark Paid</button>
+                </form>
+              {% else %}
+                <em>Paid</em>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p>No fines found.</p>
+    {% endif %}
+  {% endif %}
+{% endblock %}
